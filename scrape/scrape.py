@@ -1,21 +1,18 @@
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.common.keys import Keys
-import json, os, re, time
-from .command import Commands
-from .db import DB
-from bs4 import BeautifulSoup
-import yaml
+import json, os, re, yaml
+from command import Commands
+from db import DB
 
-
-class Crawling : 
+class Scrape : 
     
     def __init__(self, cmd : Commands, db : DB) -> None:
         self._driver = None
         self._cmd = cmd if cmd is not None else Commands(None)
         self._db = db if db is not None else DB(None)
         self._config = None
+        
         
     @property
     def command(self):
@@ -32,13 +29,11 @@ class Crawling :
     
     @property
     def config(self):
+        '''config.yaml의 설정파일 불러오기'''
         if self._config is None : 
-            with open(os.getcwd()+'/config.yaml', 'r') as f:
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'config.yaml'), 'r') as f:
                 self._config =  yaml.safe_load(f)
         return self._config
-        
-    def html_parser(self, content):
-        return BeautifulSoup(content, 'html.parser')
         
     def open_driver(self):
         options = webdriver.ChromeOptions() # remove USB로 인식하는 error 제거 options 
@@ -77,12 +72,6 @@ class Crawling :
         results =  self.driver.execute_script(script)
         return json.loads(results)
     
-    def has_media_tag_script(self, tag_name:str):
-        return f"0<document.querySelectorAll('script[src*={tag_name}]').length"
-    
-    def has_media_tag(self, **validations) :
-        return {channel:json.loads(self.driver.execute_script(f'return JSON.stringify({self.has_media_tag_script(tag_name)})')) for channel, tag_name in validations.items()}
-    
     def get_html(self) -> list[str]:
         script = '''let elements = Array.from(document.getElementsByTagName('script'))
             .map((scr)=>scr.outerHTML)
@@ -90,6 +79,12 @@ class Crawling :
         return JSON.stringify(elements);
         '''
         return json.loads(self.driver.execute_script(script))
+    
+    def has_media_tag_script(self, tag_name:str):
+        return f"0<document.querySelectorAll('script[src*={tag_name}]').length"
+    
+    def has_media_tag(self, **validations) :
+        return {channel:json.loads(self.driver.execute_script(f'return JSON.stringify({self.has_media_tag_script(tag_name)})')) for channel, tag_name in validations.items()}
     
     def get_valid(self):
         data = self.has_media_tag(**self.config['MEDIA_TAG'])
@@ -154,8 +149,10 @@ class Crawling :
                 
 # ---------- DB ------------
                 
-    def create_table(self):
+    def create(self):
         columns = self.config[f'{self.command.table}_col']
         self.db.create_table(self.command.table, **columns)
                 
-        
+    def select(self):
+        columns = ['*'] if self.command.columns is None else self.command.columns
+        data = self.db.select_table(self.command.table, columns)

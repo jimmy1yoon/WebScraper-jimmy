@@ -1,10 +1,10 @@
 import sqlite3
-import re
+import re, os
 
 class DB:
     
-    def __init__(self, urlname : str) -> None:
-        self.make_db(urlname)
+    def __init__(self, db_name : str) -> None:
+        self.make_db(db_name)
         
     @property
     def cur(self):
@@ -14,14 +14,15 @@ class DB:
     def con(self):
         return self._con
         
-    def make_db(self, url) -> None:
-        filename = 'galaxycampus.db'
-        try:
-            self._con = sqlite3.connect(f'./crawling/{filename}')
-            self._cur = self._con.cursor()
-
-        except FileNotFoundError:
-            pass
+    def make_db(self, db_name) -> None:
+        filename = f'{db_name}.db'
+        db_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+f'\db\{filename}'
+        if not os.path.exists(db_path):
+            make_file = input('새로운 DB를 만드시겠습니까? (y/n)')
+            if make_file != 'y' or make_file != 'Y':
+                raise('DB 연결 오류')
+        self._con = sqlite3.connect(db_path)
+        self._cur = self._con.cursor()
                 
     def commit(self):
         self.con.commit()
@@ -46,10 +47,10 @@ class DB:
         self.commit()
                 
     def insert_row(self, name, columns:tuple, items:tuple):
-        col_cnt = ''
+        col_str = ''
         for item in columns:
-            col_cnt = col_cnt + '?,'
-        query = f"INSERT INTO {name} {columns} VALUES ({col_cnt.rstrip(',')});"
+            col_str = col_str + '?,'
+        query = f"INSERT INTO {name} {columns} VALUES ({col_str.rstrip(',')});"
         self.cur.execute(query,items)
         self.commit()
         
@@ -57,8 +58,9 @@ class DB:
         self.cur.execute(f'DELETE FROM {name}')
         self.commit()
         
-    def select_table(self, name):
-        query = f"SELECT * FROM {name};"
+    def select_table(self, name:str, columns:list):
+        columns = str(columns).strip('[]')
+        query = f"SELECT {columns} FROM {name};"
         self.cur.execute(query)
         data = self.cur.fetchall()
         return data

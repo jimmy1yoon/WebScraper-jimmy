@@ -1,4 +1,4 @@
-from . import main
+from __init__ import main
 
 import sys
 
