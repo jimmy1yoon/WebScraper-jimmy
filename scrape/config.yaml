@@ -14,7 +14,7 @@ create_table:
     html_elements : 
         id : 'INTEGER PRIMARY KEY AUTOINCREMENT'
         baseURI : 'TEXT' 
-        tagName' : 'TEXT' 
+        tagName : 'TEXT' 
         className : 'TEXT' 
         href : 'TEXT' 
         textContent : 'TEXT'
@@ -22,13 +22,13 @@ create_table:
 
     tag_valid : 
         id : 'INTEGER PRIMARY KEY AUTOINCREMENT'
-        baseURI' : 'TEXT' 
+        baseURI : 'TEXT' 
         google_ads : 'TEXT' 
         google_ua : 'TEXT'
         googletagmanager : 'TEXT' 
-        criteo' : 'TEXT' 
-        facebook' : 'TEXT'
+        criteo : 'TEXT' 
+        facebook : 'TEXT'
         adbrix : 'TEXT' 
-        artistchai' : 'TEXT' 
-        adobe_analytics' : 'TEXT' 
-        naver_analytics' : 'TEXT'
+        artistchai : 'TEXT' 
+        adobe_analytics : 'TEXT' 
+        naver_analytics : 'TEXT'

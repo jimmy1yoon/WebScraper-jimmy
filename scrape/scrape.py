@@ -86,10 +86,6 @@ class Scrape :
     def has_media_tag(self, **validations) :
         return {channel:json.loads(self.driver.execute_script(f'return JSON.stringify({self.has_media_tag_script(tag_name)})')) for channel, tag_name in validations.items()}
     
-    def get_valid(self):
-        data = self.has_media_tag(**self.config['MEDIA_TAG'])
-        self.db.insert_row(self.command.table, tuple(data.keys()), tuple(data.values()))
-    
     def get_url(self):
         url_list = [self.change_href(row) for row in self.get_page_url()]
         return url_list
@@ -124,23 +120,32 @@ class Scrape :
                 
     def get_html_elements(self):
         visited = []
+        tablename = 'html_elements' if self.command.table is None else self.command.table
         for row in self.get_url_html():
             if row not in visited: 
                 visited.append(row)
-                self.db.insert_row(self.command.table, tuple(row.keys()), tuple(row.values()))
+                self.db.insert_row(tablename, tuple(row.keys()), tuple(row.values()))
+        
+    def get_valid(self, url = None):
+        if url is None:
+            url = self.command.url
+        table_name = 'tag_valid'
+        data = self.has_media_tag(**self.config['MEDIA_TAG'])
+        self.db.insert_row(table_name, tuple(data.keys()), tuple(data.values()))
+        self.db.insert_row(table_name, ('baseURI',) , (url,))
         
     def get_main(self):
         visited = []
         self.get_html_elements()
         url_list = self.get_url()
-        input("로그인 하셨습니까? (y/n): ") # google login은 안됌
+        # input("로그인 하셨습니까? (y/n): ") # google login은 안됌
         for i, url in enumerate(url_list):
             print(f'{i / len(url_list) * 100}% 진행 중')
-            if url not in visited and i < 10:
+            if url not in visited and i < 30:
                 visited.append(url)
                 self.open_page(url)
                 self.get_html_elements()
-                self.get_valid()
+                self.get_valid(url)
             else:
                 break
         
@@ -150,9 +155,12 @@ class Scrape :
 # ---------- DB ------------
                 
     def create(self):
-        columns = self.config[f'{self.command.table}_col']
+        columns = self.config['create_table'][self.command.table]
         self.db.create_table(self.command.table, **columns)
                 
     def select(self):
         columns = ['*'] if self.command.columns is None else self.command.columns
         data = self.db.select_table(self.command.table, columns)
+        
+    def drop(self):
+        self.db.drop_table(self.command.table)

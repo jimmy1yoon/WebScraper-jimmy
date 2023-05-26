@@ -45,7 +45,7 @@ class Commands():
         parser.add_argument('--url', type=str, required=True ,help='input url')
         parser.add_argument('--id', type=str,help='input id')
         parser.add_argument('--password', type=str, help='input password')
-        parser.add_argument('--db', type=str, help='db name')
+        parser.add_argument('--db', type=str, required=True, help='db name')
         parser.add_argument('--sql', type=str, help='sql query ex) tablename[columns]') 
         parser.add_argument('--func', type=str, required=True, help='run function')
         return parser
@@ -55,7 +55,7 @@ class Commands():
         self._url = self.add_https(self._items['url'])
         self._id = self._items[self._KEY_PARSER_ID]
         self._password = self._items[self._KEY_PARSER_PASSWORD]
-        self._table, self._columns = self.parse_sql(self._items[self._KEY_PARSER_SQL])
+        self.parse_sql(self._items[self._KEY_PARSER_SQL])
         self._db = self._items[self._KEY_PARSER_DB]
         self._function = self._items['func']
         
@@ -65,8 +65,12 @@ class Commands():
         return url
         
     def parse_sql(self, query):
-        table_name = re.match(r'\w+', query).group()
-        column_list = re.findall(r'\w+', query[len(table_name):])
-        if not column_list:
-            column_list = None
-        return table_name, column_list
+        if query is None:
+            self._table = None
+            self._columns = None
+        else:
+            self._table = re.match(r'\w+', query).group()
+            column_list = re.findall(r'\w+', query[len(self._table):])
+            if not column_list:
+                column_list = None
+            self._columns = column_list

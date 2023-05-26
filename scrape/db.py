@@ -50,6 +50,8 @@ class DB:
         col_str = ''
         for item in columns:
             col_str = col_str + '?,'
+        if len(columns) == 1:
+            columns = str(columns).replace(',', '')
         query = f"INSERT INTO {name} {columns} VALUES ({col_str.rstrip(',')});"
         self.cur.execute(query,items)
         self.commit()
