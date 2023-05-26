@@ -1,0 +1,34 @@
+MEDIA_TAG :
+    google_ads : '"gtag/js?id=AW-"'
+    google_ua: '"gtag/js?id=UA-"'
+    googletagmanager : '"www.googletagmanager.com/gtm.js?id=GTM-"'
+    criteo: '"static.criteo.net/js/ld/ld.js"'
+    facebook: '"/fbevents.js"'
+    adbrix : '"static.adbrix.io/web-sdk/latest/abx-web-sdk.min.js"'
+    artistchai : '"at.artistchai.co.kr/script/at_v14.min.js"'
+    adobe_analytics : '"assets.adobedtm.com/"'
+    naver_analytics : '"wcs.naver.net/wcslog.js"'
+    # 'google_ga4: '"gtm.js?id=GTM-"',
+
+create_table:
+    html_elements : 
+        id : 'INTEGER PRIMARY KEY AUTOINCREMENT'
+        baseURI : 'TEXT' 
+        tagName' : 'TEXT' 
+        className : 'TEXT' 
+        href : 'TEXT' 
+        textContent : 'TEXT'
+        outerHTML : 'TEXT'
+
+    tag_valid : 
+        id : 'INTEGER PRIMARY KEY AUTOINCREMENT'
+        baseURI' : 'TEXT' 
+        google_ads : 'TEXT' 
+        google_ua : 'TEXT'
+        googletagmanager : 'TEXT' 
+        criteo' : 'TEXT' 
+        facebook' : 'TEXT'
+        adbrix : 'TEXT' 
+        artistchai' : 'TEXT' 
+        adobe_analytics' : 'TEXT' 
+        naver_analytics' : 'TEXT'
