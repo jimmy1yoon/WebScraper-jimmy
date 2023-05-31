@@ -41,6 +41,7 @@ class Commands():
         self.load(args)
     
     def _build_parser(self):
+        '''command 입력을 위한 argument parser 설정'''
         parser = argparse.ArgumentParser(prog= 'crawling', description='crawling tags in website')
         parser.add_argument('--url', type=str, required=True ,help='input url')
         parser.add_argument('--id', type=str,help='input id')
@@ -51,6 +52,7 @@ class Commands():
         return parser
     
     def load(self,args = sys.argv):
+        '''parser 결과를 저장'''
         self._items = vars(self._parser.parse_args(*args))
         self._url = self.add_https(self._items['url'])
         self._id = self._items[self._KEY_PARSER_ID]
@@ -60,11 +62,16 @@ class Commands():
         self._function = self._items['func']
         
     def add_https(self, url):
+        '''입력받은 url이 https 로 시작하지 않는 경우 https:// 추가'''
         if not url.startswith("https"):
             url = "https://" + url
         return url
         
     def parse_sql(self, query):
+        ''' "sql" 명령어 parse 
+        
+        입력방식: 'TABLE NAME[col1, col2, col3]' 필요시 [col name..] 은 생략 가능
+        '''
         if query is None:
             self._table = None
             self._columns = None

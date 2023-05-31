@@ -3,8 +3,9 @@ import re, os
 
 class DB:
     
-    def __init__(self, db_name : str) -> None:
+    def __init__(self, db_name : str, config: dict) -> None:
         self.make_db(db_name)
+        self._config = config
         
     @property
     def cur(self):
@@ -13,6 +14,10 @@ class DB:
     @property
     def con(self):
         return self._con
+    
+    @property
+    def config(self):
+        return self._config
         
     def make_db(self, db_name) -> None:
         '''db가 있을 경우 connect 없을 경우 새로운 .db 파일 생성'''
@@ -48,7 +53,20 @@ class DB:
         col_str = col_str.rstrip(',')
         query = f'CREATE TABLE {name} ({col_str})'
         self.cur.execute(query)        
-                
+    
+    def check_table(self, table_name:str):
+        '''insert 전 table 존재 유무 확인
+        
+        table이 없을 경우 create table 실행
+        - parameter
+            - table_name : check 할 table name
+        '''
+        query = f"SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{table_name}'"
+        self.cur.execute(query)
+        if self.cur.fetchone()[0] == 0:
+            columns = self.config['create_table'][table_name]
+            self.create_table(table_name, **columns)
+            
     def rename_col(self, table_name:str, name_current:str, name_new):
         ''' sqlite rename column 실행
         - parameter
@@ -59,38 +77,41 @@ class DB:
         self.cur.execute(query)
         self.commit()
                 
-    def insert_row(self, name, columns:tuple, items:tuple):
+    def insert_row(self, table_name, columns:tuple, items:tuple):
         ''' sqlite insert 명령문 실행
         - parameter
             - name : table name
             - columns : columns name (tuple)
             - items : values
-            '''
+            
+        ##TODO : 중복 Check -> 현재는 중복 check 없이 모든 row를 insert 
+        '''
+        self.check_table(table_name)
         col_str = ''
         for item in columns:
             col_str = col_str + '?,'
         if len(columns) == 1:
             columns = str(columns).replace(',', '')
-        query = f"INSERT INTO {name} {columns} VALUES ({col_str.rstrip(',')});"
+        query = f"INSERT INTO {table_name} {columns} VALUES ({col_str.rstrip(',')});"
         self.cur.execute(query,items)
         self.commit()
         
-    def delete_table(self, name):
+    def delete_table(self, table_name):
         '''sqlite delete 명령문 실행
         - parameter
             - name : table name
         '''
-        self.cur.execute(f'DELETE FROM {name}')
+        self.cur.execute(f'DELETE FROM {table_name}')
         self.commit()
         
-    def select_table(self, name:str, columns:list):
+    def select_table(self, table_name:str, columns:list):
         '''sqlite select 명령문 실행
         - parameter
             - name : table name
             - columns : columns
         '''
         columns = str(columns).strip('[]')
-        query = f"SELECT {columns} FROM {name};"
+        query = f"SELECT {columns} FROM {table_name};"
         self.cur.execute(query)
         data = self.cur.fetchall()
         return data

@@ -88,6 +88,8 @@ webscraper는 홈페이지내의 광고 태그, HTML 요소와 같은 정보를 
   2. `get_elem_in_page()` : web내의 정보 수집
   3. 다음 url로 이동하며 2 단계 반복 --> url을 visit에 추가하여 중복된 url은 이동 X
 
+  **##TODO** : Login 기능 추가 (Google Login은 selenium driver를 사용하면 이용 X, 현재는 사용자가 직접 ID, password를 입력하는 방식)
+
 ### db Class
 
 SQLite를 사용하여 DB와 상호작용하는 class Ex) select, create, insert 명령문 실행
@@ -96,9 +98,9 @@ SQLite를 사용하여 DB와 상호작용하는 class Ex) select, create, insert
 
 - 함수로 구현한 sql 명령어
   - `drop`
-  - `create`
+  - `create` : columns 정보는 config.yaml 파일에 미리 입력해야함
   - `rename`
-  - `insert`
+  - `insert`  : ##TODO 중복 Check -> 현재는 중복 check 없이 모든 row를 insert 
   - `delete`
   - `select`
 
