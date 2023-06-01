@@ -98,7 +98,7 @@ class Scrape :
         ''' 현재 페이지내에서 이동 가능한 url list  
         return url list
         '''
-        url_list = [Utils.change_href(row) for row in self.get_page_url()]
+        url_list = [Utils.change_href(row) for row in self.get_page_url()] 
         return url_list
         
 #-------- run the command function
@@ -141,7 +141,6 @@ class Scrape :
         
     def get_elem_in_page(self, url:str) -> None:
         '''페이지의 필요한 정보 수집 함수들을 한번에 실행
-        
         - parameter
             - url : 탐색할 url
         

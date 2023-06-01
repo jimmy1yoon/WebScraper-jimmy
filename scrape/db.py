@@ -29,30 +29,6 @@ class DB:
                 raise('DB 연결 오류')
         self._con = sqlite3.connect(db_path)
         self._cur = self._con.cursor()
-                
-    def commit(self):
-        '''DB 변경사항을 commit'''
-        self.con.commit()
-                
-    def drop_table(self, name:str):
-        ''' sqlite 'drop table' 실행
-        - parameter
-            - name : drop할 table 이름
-        '''
-        query = f'DROP TABLE IF EXISTS {name}'
-        self.cur.execute(query)
-        self.commit()
-                
-    def create_table(self, name:str, **columns):
-        ''' sqlite 'create table' 실행
-        - parameter
-            - index를 추가한다면 columns의 첫번째로 '''
-        col_str = ''
-        for col_name, col_type in columns.items():
-            col_str = col_str + f'{col_name} {col_type},'
-        col_str = col_str.rstrip(',')
-        query = f'CREATE TABLE {name} ({col_str})'
-        self.cur.execute(query)        
     
     def check_table(self, table_name:str):
         '''insert 전 table 존재 유무 확인
@@ -75,7 +51,7 @@ class DB:
         '''
         query = f'ALTER TABLE {table_name} RENAME COLUMN {name_current} TO {name_new};'
         self.cur.execute(query)
-        self.commit()
+        self.con.commit()
                 
     def insert_row(self, table_name, columns:tuple, items:tuple):
         ''' sqlite insert 명령문 실행
@@ -94,7 +70,28 @@ class DB:
             columns = str(columns).replace(',', '')
         query = f"INSERT INTO {table_name} {columns} VALUES ({col_str.rstrip(',')});"
         self.cur.execute(query,items)
-        self.commit()
+        self.con.commit()
+        
+                    
+    def create_table(self, name:str, **columns):
+        ''' sqlite 'create table' 실행
+        - parameter
+            - index를 추가한다면 columns의 첫번째로 '''
+        col_str = ''
+        for col_name, col_type in columns.items():
+            col_str = col_str + f'{col_name} {col_type},'
+        col_str = col_str.rstrip(',')
+        query = f'CREATE TABLE {name} ({col_str})'
+        self.cur.execute(query)     
+                    
+    def drop_table(self, name:str):
+        ''' sqlite 'drop table' 실행
+        - parameter
+            - name : drop할 table 이름
+        '''
+        query = f'DROP TABLE IF EXISTS {name}'
+        self.cur.execute(query)
+        self.con.commit()   
         
     def delete_table(self, table_name):
         '''sqlite delete 명령문 실행
@@ -102,7 +99,7 @@ class DB:
             - name : table name
         '''
         self.cur.execute(f'DELETE FROM {table_name}')
-        self.commit()
+        self.con.commit()
         
     def select_table(self, table_name:str, columns:list):
         '''sqlite select 명령문 실행

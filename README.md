@@ -30,14 +30,14 @@ webscraper는 홈페이지내의 광고 태그, HTML 요소와 같은 정보를 
 2. 페이지를 돌며 필요한 정보 수집 후 DB에 저장
    1. 페이지내에 필요한 정보(HTML tag)수집 -> insert `html_elements` table
    2. 페이지내에 광고 tag 설치 여부 수집 -> insert `tag_valid` table
-   3. 페이지내의 network log 수집 후 원하는 request 수집 **##TODO** 
+   3. 페이지내의 network log 수집 후 원하는 request 수집 **#TODO** 
   
 3. 다음 url 로 이동 -> 2 단계 반복
 ## 실행 방식
 ### 실행 command 파라미터
-- url (***required***) : 탐색할 메인 URL, 탐색 트리의 가장 위의 노드 Ex) --url "https://www.samsung.com/sec/"
-- db (***required***) : 수집한 데이터를 저장하거나 추출할 때 사용할 DB 이름 Ex) --db "samsung" 
-- sql : sql query문 작성시 Table 과 columns / 입력 형식 --sql "table[col1,col2,col3]"
+- url (***required***) : 탐색할 메인 URL, 탐색 트리의 가장 위의 노드 Ex: --url "https:/www.test.com"
+- db (***required***) : 수집한 데이터를 저장하거나 추출할 때 사용할 DB 이름 Ex: --db "samsung" 
+- sql : (**입력시 DB class의 함수 실행**) sql query문 작성시 Table 과 columns / 입력 형식 --sql "table[col1,col2,col3]"
 - func (***required***) : scrape.py 내에서 실행할 def 입력
 - ~~id : 로그인시 사용할 id (사용 X)~~
 - ~~password : 로그인시 사용할 password (사용 X)~~
@@ -47,15 +47,19 @@ webscraper는 홈페이지내의 광고 태그, HTML 요소와 같은 정보를 
 `python -m scrape --url "탐색할 main url" [--db "연결할 DB 이름"] [--sql "table_name[col1, col2, col3]"] --func "함수이름"`
 
 ## 실행 함수
-`--func get_main` : 이동가능한 모든 페이지를 이동하며 필요한 모든 정보를 수집하여 DB에 저장
+- `--func get_main` : 이동가능한 모든 페이지를 이동하며 필요한 모든 정보를 수집하여 DB에 저장
+- `--func get_valid` : 현재 페이지의 광고 태그 설치 여부를 DB에 저장
+- `--func get_html_elements` : 현재 페이지의 특정 HTML요소를 DB에 저장
+- `--func get_log` : 현재 페이지의 log 정보를 수집 (현재 개발 중)
+- `--func get_main` : 이동가능한 모든 페이지를 이동하며 필요한 모든 정보를 수집하여 DB에 저장
 
-`--func get_valid` : 현재 페이지의 광고 태그 설치 여부를 DB에 저장
+--- sql query
+- `--sql table --func create` : sql create query 실행
+- `--sql table --func select` : sql select query 실행 -> 모든 row 반환
+- `--sql table --func delete` : sql delect query 실행
+- `--sql table --func drop` :  sql drop query 실행
 
-`--func get_html_elements` : 현재 페이지의 특정 HTML요소를 DB에 저장
-
-`--func get_log` : 현재 페이지의 log 정보를 수집 (현재 개발 중)
-
-### scrape Class
+## scrape Class
 
 프로젝트의 main 함수, selenium driver를 활용하여 이동하거나 정보 수집하는 class
 
@@ -64,14 +68,14 @@ webscraper는 홈페이지내의 광고 태그, HTML 요소와 같은 정보를 
 - `get_url()`
   설명: 페이지 내의 html a.href를 수집하여 이동 가능한 URL을 전부 수집
   1. `get_page_url()` : 현재 페이지내의 a.href, a.outerHTML 두 가지 요소를 수집
-  2. `change_href()` : **##TODO** 수집한 href url 중에서 이동 불가능한 url(script 로 이동하는 요소)을 outerHTML코드를 parsing하여 url 업데이트
+  2. `change_href()` : **#TODO** 수집한 href url 중에서 이동 불가능한 url(script 로 이동하는 요소)을 outerHTML코드를 parsing하여 url 업데이트
 
 - `get_html_elements()` 
   설명: 페이지 내의 html a tag 를 수집하여 db에 저장 
   1. `get_url_html()` : 현재 페이지내의 html 요소 수집
   2. html 요소를 html_element table 에 저장
    
-  **##TODO** a 태그 이외에 다른 원하는 tag(Ex: button)를 입력받아 함께 저장 
+  **#TODO** a 태그 이외에 다른 원하는 tag(Ex: button)를 입력받아 함께 저장 
 
 - `get_valid()`
   1. `has_media_tag()` : html script를 통해 현재 페이지 내의 광고 매체별 tag 설치 여부 확인
@@ -81,18 +85,18 @@ webscraper는 홈페이지내의 광고 태그, HTML 요소와 같은 정보를 
   1. selenium get_log 함수를 통해 log 정보 수집
   2. 그중 원하는 키워드가 들어있는 log 정보만 추출
   3. 원하신 request log 를 추출 후 Utils.parse_parameter()로 parse
-  4. **##TODO** 광고 매체별 request log 추출 / get method 이외에 post request 파라미터 추출
+  4. **#TODO** 광고 매체별 request log 추출 / get method 이외에 post request 파라미터 추출
 
 - `get_main()`
   1. `get_url()` : web 안의 이동 가능한 url 목록 수집
   2. `get_elem_in_page()` : web내의 정보 수집
   3. 다음 url로 이동하며 2 단계 반복 --> url을 visit에 추가하여 중복된 url은 이동 X
 
-  **##TODO** : Login 기능 추가 (Google Login은 selenium driver를 사용하면 이용 X, 현재는 사용자가 직접 ID, password를 입력하는 방식)
+  **#TODO** : Login 기능 추가 (Google Login은 selenium driver를 사용하면 이용 X, 현재는 사용자가 직접 ID, password를 입력하는 방식)
 
-### db Class
+## db Class
 
-SQLite를 사용하여 DB와 상호작용하는 class Ex) select, create, insert 명령문 실행
+SQLite를 사용한 DB와 상호작용하는 class Ex: select, create, insert 명령문 실행
 
 - `make_db` : init을 통해서 인스턴스가 만들어지면 .db파일을 생성하거나 connect 
 
@@ -100,15 +104,25 @@ SQLite를 사용하여 DB와 상호작용하는 class Ex) select, create, insert
   - `drop`
   - `create` : columns 정보는 config.yaml 파일에 미리 입력해야함
   - `rename`
-  - `insert`  : ##TODO 중복 Check -> 현재는 중복 check 없이 모든 row를 insert 
+  - `insert` : #TODO 중복 Check -> 현재는 중복 check 없이 모든 row를 insert 
   - `delete`
   - `select`
 
-### Utils Class
+## Utils Class
 
 여러 클래스에서 사용되는 static method를 모아놓은 기능 모듈 
 
-### Command Class
+- `change_href()`
+  1. 이동 불가능한 url Ex: https:/www.test.com/sec/#" 과 같이 HTML 함수를 실행하여 이동하는 요소 추출
+  2. outerHTML script에서 url 추출
+  3. update url
+
+- `parse_parameter()`
+  1. get request의 파라미터를 parse 
+
+    Ex: https:/www.test.com/sec/?elem1=0&id=1&source=1 -> {elem1 : 0, id : 1, source : 1}
+
+## Command Class
 
 입력받은 command 명령어를 parse 하여 scrape 인스턴스에 전달
 
